@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#101010"
+                tools:context=".MainActivity">
+
+	<RelativeLayout
+		android:id="@+id/main"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"/>
+
+	<EditText
+		android:id="@+id/ip_address"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_alignParentTop="true"
+		android:hint="请输入联系对方4位房间号"
+		android:textColor="#ffffff"/>
+
+	<!--<com.xwr.cameracodec.ipedit.SuperEditTextandroid:layout_width="wrap_content"android:layout_height="wrap_content"/>-->
+
+
+	<!--<com.google.android.material.textfield.TextInputLayoutandroid:layout_marginTop="50dp"android:id="@+id/textInputLayout"android:layout_width="match_parent"android:layout_height="wrap_content"app:counterMaxLength="4"android:hint="请输入要联系的房间号"><com.google.android.material.textfield.TextInputEditTextandroid:id="@+id/textInputEditText"android:layout_width="match_parent"android:layout_height="wrap_content"android:hint="请输入要联系的房间号2" /></com.google.android.material.textfield.TextInputLayout>-->
+
+
+	<TextView
+		android:id="@+id/tvTip"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_centerInParent="true"
+		android:text="正在呼叫......"
+		android:textColor="#ffffff"
+		android:textSize="32sp"
+		android:visibility="gone"/>
+
+
+<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_alignParentBottom="true"
+		android:layout_marginBottom="20dp"
+		android:gravity="center_horizontal">
+	<Button
+		android:id="@+id/getIp"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:visibility="gone"
+		android:text="getIp"/>
+
+		<Button
+			android:id="@+id/btn_start"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="视频"/>
+
+		<Button
+			android:id="@+id/btn_call"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_marginLeft="20dp"
+			android:text="呼叫"/>
+
+		<Button
+			android:id="@+id/btn_stop"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_marginLeft="20dp"
+			android:text="挂断"/>
+
+	</LinearLayout>
+
+</RelativeLayout>
