@@ -9,8 +9,9 @@
 
 	<RelativeLayout
 		android:id="@+id/main"
-		android:layout_width="match_parent"
-		android:layout_height="match_parent"/>
+		android:layout_width="680dp"
+		android:layout_height="480dp"
+		android:layout_centerHorizontal="true"/>
 
 	<EditText
 		android:id="@+id/ip_address"
@@ -37,30 +38,34 @@
 		android:visibility="gone"/>
 
 
-<LinearLayout
+	<LinearLayout
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:layout_alignParentBottom="true"
 		android:layout_marginBottom="20dp"
 		android:gravity="center_horizontal">
-	<Button
-		android:id="@+id/getIp"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:visibility="gone"
-		android:text="getIp"/>
+
+		<Button
+			android:id="@+id/getIp"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="getIp"
+			android:visibility="gone"/>
 
 		<Button
 			android:id="@+id/btn_start"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
-			android:text="视频"/>
+			android:text="视频"
+			android:clickable="false"
+			android:visibility="gone"/>
 
 		<Button
 			android:id="@+id/btn_call"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_marginLeft="20dp"
+			android:clickable="false"
 			android:text="呼叫"/>
 
 		<Button

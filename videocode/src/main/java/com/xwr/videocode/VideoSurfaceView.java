@@ -8,7 +8,6 @@ import android.media.MediaCodec;
 import android.media.MediaFormat;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.os.Message;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -18,17 +17,13 @@ import com.xwr.speex.SpeexUtil;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.util.List;
 
 import static com.xwr.videocode.CameraFormat.determineMaximumSupportedFramerate;
 import static com.xwr.videocode.CameraFormat.getDgree;
 import static com.xwr.videocode.TypeConUtil.intToByteArray;
-import static com.xwr.videocode.TypeConUtil.toShortArray;
 
 //import com.xwr.speex.SpeexUtil;
 
@@ -58,6 +53,7 @@ public class VideoSurfaceView extends SurfaceView implements SurfaceHolder.Callb
   private String dstAddress = null;
   private HandlerThread mHandlerThread;
   Handler workHandler;
+  private String path = FileUtil.getSDPath() + "/test.h264";
 
   //构造函数
   public VideoSurfaceView(Context context, int cameraId) {
@@ -70,32 +66,36 @@ public class VideoSurfaceView extends SurfaceView implements SurfaceHolder.Callb
     initMediaCodec();
     mSurfaceHolder.addCallback(this);
     mSurfaceHolder.setFixedSize(getResources().getDisplayMetrics().widthPixels, getResources().getDisplayMetrics().heightPixels);
-    mHandlerThread = new HandlerThread("handlerThread");
-    mHandlerThread.start();
-    workHandler = new Handler(mHandlerThread.getLooper()) {
-      @Override
-      public void handleMessage(Message msg) {
-        Log.d(TAG, "sendVideo thread:" + Thread.currentThread().getName());
-        super.handleMessage(msg);
-        byte[] data = (byte[]) msg.obj;
-        try {
-          DatagramPacket packet = new DatagramPacket(data, data.length, InetAddress.getByName(dstAddress), 52100);
-          mSocket.send(packet);
-        } catch (Exception e) {
-          e.printStackTrace();
-        }
-      }
-    };
+    //    mHandlerThread = new HandlerThread("handlerThread");
+    //    mHandlerThread.start();
+    //    workHandler = new Handler(mHandlerThread.getLooper()) {
+    //      @Override
+    //      public void handleMessage(Message msg) {
+    //        Log.d(TAG, "sendVideo thread:" + Thread.currentThread().getName());
+    //        super.handleMessage(msg);
+    //        byte[] data = (byte[]) msg.obj;
+    //        try {
+    //          DatagramPacket packet = new DatagramPacket(data, data.length, InetAddress.getByName(dstAddress), 52100);
+    //          mSocket.send(packet);
+    //        } catch (Exception e) {
+    //          e.printStackTrace();
+    //        }
+    //
+    //     } };
+    Log.d("huahua", "path:" + path);
+    FileUtil.createFile(path);
   }
 
   public void initSocket(String address) {
-    try {
-      mSocket = new DatagramSocket();
-    } catch (SocketException e) {
-      e.printStackTrace();
-    }
+    //    try {
+    //      mSocket = new DatagramSocket();
+    //    } catch (SocketException e) {
+    //      e.printStackTrace();
+    //    }
     dstAddress = address;
-    mPcmUdpUtil = PcmUdpUtil.getUdpBuild();
+    TcpVideo.getInstance().connect(address);
+    TcpPcm.getInstance().connect(address);
+    //    mPcmUdpUtil = PcmUdpUtil.getUdpBuild();
 
   }
 
@@ -109,16 +109,17 @@ public class VideoSurfaceView extends SurfaceView implements SurfaceHolder.Callb
     AudioRecordManager.getInstance().startRecording(new AudioRecordManager.OnAudioRecordListener() {
       @Override
       public void onVoiceRecord(final byte[] data, int size) {
-        mPcmUdpUtil.sendMessage(data, dstAddress);
-        mPcmUdpUtil.setUdpReceiveCallback(new PcmUdpUtil.OnUDPReceiveCallbackBlock() {
-          @Override
-          public void OnParserComplete(byte[] playdata) {
-            SpeexUtil.getInstance().echoCancellation(toShortArray(data), toShortArray(playdata), outdata);
-            Log.d("pcm", "length:" + outdata.length);
-
-          }
-
-        });
+        TcpPcm.getInstance().sendBytePcm(data);
+        //        mPcmUdpUtil.sendMessage(data, dstAddress);
+        //        mPcmUdpUtil.setUdpReceiveCallback(new PcmUdpUtil.OnUDPReceiveCallbackBlock() {
+        //          @Override
+        //          public void OnParserComplete(byte[] playdata) {
+        //            SpeexUtil.getInstance().echoCancellation(toShortArray(data), toShortArray(playdata), outdata);
+        //            Log.d("pcm", "length:" + outdata.length);
+        //
+        //          }
+        //
+        //        });
       }
     });
   }
@@ -197,6 +198,10 @@ public class VideoSurfaceView extends SurfaceView implements SurfaceHolder.Callb
       int cameraRotationOffset = camInfo.orientation;
       int rotate = (360 + cameraRotationOffset - getDgree(mContext)) % 360;
       parameters.setRotation(rotate);
+      List<Integer> previewFormats = mCamera.getParameters().getSupportedPreviewFormats();
+      for (int i = 0; i < previewFormats.size(); i++) {
+        Log.d(TAG, "formats:" + previewFormats.get(i));
+      }
       parameters.setPreviewFormat(ImageFormat.NV21);
       List<Camera.Size> sizes = parameters.getSupportedPreviewSizes();
       parameters.setPreviewSize(width, height);
@@ -245,8 +250,10 @@ public class VideoSurfaceView extends SurfaceView implements SurfaceHolder.Callb
       mCamera.setPreviewCallbackWithBuffer(null);
       mCamera.stopPreview();
     }
-   // AudioTrackManager.getInstance().pausePlay();
-    AudioRecordManager.getInstance().stopRecording();
+    TcpVideo.getInstance().close();
+    TcpPcm.getInstance().disconnect();
+    //    AudioTrackManager.getInstance().pausePlay();
+    //    AudioRecordManager.getInstance().stopRecording();
   }
 
 
@@ -259,8 +266,14 @@ public class VideoSurfaceView extends SurfaceView implements SurfaceHolder.Callb
     mMediaCodec.stop();
     mMediaCodec.release();
     mMediaCodec = null;
-    mHandlerThread.quit();//退出消息循环
+    if(TcpVideo.getInstance().isConnect()){
+      TcpVideo.getInstance().close();
+    }
+    TcpPcm.getInstance().disconnect();
+
+    //    mHandlerThread.quit();//退出消息循环
     AudioRecordManager.getInstance().onDestroy();
+    AudioTrackManager.getInstance().stopPlay();
   }
 
   /**
@@ -326,12 +339,17 @@ public class VideoSurfaceView extends SurfaceView implements SurfaceHolder.Callb
                 outData = iframeData;
               }
               byte[] length = intToByteArray(outData.length);
-              byte[] testdata = new byte[length.length + outData.length];
-              System.arraycopy(length, 0, testdata, 0, length.length);
-              System.arraycopy(outData, 0, testdata, length.length, outData.length);
-              Message message = new Message();
-              message.obj = testdata;
-              workHandler.sendMessageDelayed(message, 1);
+
+              byte[] testdata = new byte[length.length + outData.length + 2];
+              byte[] head = {(byte) 0xff, 0x00};
+              System.arraycopy(head, 0, testdata, 0, 2);
+              System.arraycopy(length, 0, testdata, 2, length.length);
+              System.arraycopy(outData, 0, testdata, length.length + 2, outData.length);
+              FileUtil.save(testdata, 0, testdata.length, path, true);
+              TcpVideo.getInstance().sendImage(testdata);
+              //              Message message = new Message();
+              //              message.obj = testdata;
+              //              workHandler.sendMessageDelayed(message, 1);
               //workHandler.sendMessage(message);
               Log.d(TAG, "onPreviewCallback thread:" + Thread.currentThread().getName() + " data length:" + testdata.length);
               //mIVideoRecoderListener.onRecording(testdata);
