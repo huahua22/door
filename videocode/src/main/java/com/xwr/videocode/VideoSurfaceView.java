@@ -348,7 +348,7 @@ public class VideoSurfaceView extends SurfaceView implements SurfaceHolder.Callb
               System.arraycopy(head, 0, testdata, 0, 2);
               System.arraycopy(length, 0, testdata, 2, length.length);
               System.arraycopy(outData, 0, testdata, length.length + 2, outData.length);
-              FileUtil.save(testdata, 0, testdata.length, path, true);
+//              FileUtil.save(testdata, 0, testdata.length, path, true);
               TcpVideo.getInstance().sendImage(testdata);
               //              Message message = new Message();
               //              message.obj = testdata;

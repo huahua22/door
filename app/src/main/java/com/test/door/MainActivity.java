@@ -1,14 +1,11 @@
 package com.test.door;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -20,34 +17,25 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.test.door.scoket.ClicenSockets;
 import com.test.door.tcp.TcpClient;
 import com.test.door.tcp.TcpServer;
 import com.xwr.videocode.VideoSurfaceView;
 
-import java.io.IOException;
-import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import static com.test.door.Constants.acceptVideoByte;
-import static com.test.door.Constants.endingByte;
 import static com.test.door.Constants.handUpVideoByte;
 import static com.test.door.Constants.refuseVideoByte;
 import static com.test.door.Constants.requestVideoByte;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, TcpServer.OnServerReceiveListener {
   private static String TAG = "MainActivity";
+  AlertDialog alertDialog2;
 
-  // Used to load the 'native-lib' library on application startup.
   static {
     System.loadLibrary("native-lib");
   }
@@ -55,120 +43,59 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
   int i = 0;
   boolean calldest = false;
   boolean destCall = false;
-  // 增强文本
-    /*TextInputLayout textInputLayout;
-    TextInputEditText textInputEditText;*/
   Button btnStart;
   Button btnStop;
   Button btnCall;
   Button btnGet;
+  Button btnVideo;
   TextView tvTip;
   VideoSurfaceView mVideoView;
   int mCameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
   RelativeLayout mRelativeLayout;
   EditText mEditText;
-  private InetAddress myAddress = null;
-  private DatagramSocket mSocket = null;
   private boolean isStart = false;
   DatagramSocket socket = null;
-  private DatagramPacket receivePacket;
-  // ip address RegExp
-  // String s = "((2(5[0-5]|[0-4]\\d))|[0-1]?\\d{1,2})(\\.((2(5[0-5]|[0-4]\\d))|[0-1]?\\d{1,2})){3}";
   private static final int BUFFER_LENGTH = 320;
-  private Thread cmdThread;
   private boolean isThreadRunning = false;
   String address;
-  private ClicenSockets clicenSockets;
   // 接收 OK 状态
   private boolean isVideo = false;
   byte[] b = new byte[4];
   String dest_ip;
-  @SuppressLint("HandlerLeak")
-  private Handler mHandler = new Handler() {
-    @Override
-    public void handleMessage(Message msg) {
-      super.handleMessage(msg);
-      switch (msg.what) {
-        case 1:
-          address = (String) msg.obj;
-          mVideoView.initSocket(address);
-          mEditText.setVisibility(View.GONE);
-          tvTip.setVisibility(View.GONE);
-          mVideoView.startRecod();
-          isStart = true;
-          break;
-        case 2:
-          address = (String) msg.obj;
-          mVideoView.initSocket(address);
-          sendCmd();  // 语音通话
-          break;
-        case 3:
-          Log.i("mHandler", "用户繁忙！！！");
-          break;
-        case 4:
-          Log.i("mHandler", "无法接通！！！");
-          break;
-        case 5:
-          if (isVideo) {
-            address = (String) msg.obj;
-            mVideoView.initSocket(address);
-            mEditText.setVisibility(View.GONE);
-            tvTip.setVisibility(View.GONE);
-            mVideoView.startRecod();
-          } else {
-            address = (String) msg.obj;
-            mVideoView.initSocket(address);
-            sendCmd();  // 语音通话
-          }
-          break;
-        default:
-          break;
-      }
-    }
-  };
-
-  {
-    //    clicenSockets = new ClicenSockets();
-  }
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
     requestPermission();
-    //       String ip = roomIdGetIP(1,1);
+    initView();
+  }
 
-    // superEditText.setDividerDrawable(getResources().getDrawable(android.R.drawable.divider_horizontal_textfield));
+  private void initView() {
     btnStart = (Button) findViewById(R.id.btn_start);
     btnStop = findViewById(R.id.btn_stop);
     btnCall = findViewById(R.id.btn_call);
     btnGet = findViewById(R.id.getIp);
     tvTip = findViewById(R.id.tvTip);
+    btnVideo = findViewById(R.id.video);
     mEditText = findViewById(R.id.ip_address);
     btnStart.setOnClickListener(this);
     btnStop.setOnClickListener(this);
     btnCall.setOnClickListener(this);
     btnGet.setOnClickListener(this);
+    btnVideo.setOnClickListener(this);
     mRelativeLayout = findViewById(R.id.main);
     mVideoView = new VideoSurfaceView(this, mCameraId);
     mRelativeLayout.addView(mVideoView);
     TcpServer.getInstance().start();
     TcpServer.getInstance().setOnServerReceiveListener(this);
-    // startSocket();
-    /*接收数据线程*/
-    // new Thread(new Receives(mHandler)).start();
-    /**开启线程 命令*/
-    // new Thread(new SendUDP()).start();
-    //    clicenSockets.getThread_receive(mHandler);
     TextWatcher textWatcher = new TextWatcher() {
       @Override
       public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
       }
 
       @Override
       public void onTextChanged(CharSequence s, int start, int before, int count) {
-
       }
 
       @Override
@@ -176,11 +103,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (mEditText.getText().length() > 4) {
           mEditText.setText("");
         }
-        Log.i(TAG, mEditText.getText().toString());
       }
     };
     mEditText.addTextChangedListener(textWatcher);
-
   }
 
 
@@ -190,17 +115,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     if (mEditText.getText().toString().isEmpty()) {
       showToast("please input roomId");
     } else {
-      Log.i("Mainactivity", "视频按钮被点击了，，，");
       TcpClient.getInstance().connect(address, 9000);
       btnCall.setVisibility(View.GONE);
       mRelativeLayout.setVisibility(View.VISIBLE);
-      // SendUDP.ip = mEditText.getText().toString();
-
-
-      Log.d(TAG, "click start btn");
       mEditText.setVisibility(View.GONE);
-      //            mVideoView.startRecod();  // start 开启视频录像 录音
-      // isStart = true;
       btnStart.setClickable(false);
       TcpClient.getInstance().setOnDataReceiveListener(dataReceiveListener);
     }
@@ -216,7 +134,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnCall.setVisibility(View.VISIBLE);
         mEditText.setVisibility(View.VISIBLE);
         btnStart.setVisibility(View.VISIBLE);
-
         if (TcpClient.getInstance().isConnect()) {
           TcpClient.getInstance().sendByteCmd(handUpVideoByte, 1001);
           try {
@@ -240,20 +157,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnStart.setClickable(true);
         btnCall.setClickable(true);
         mRelativeLayout.setVisibility(View.GONE);
-                /*// 挂断时状态置为 不忙
-                Receives.isBusy = false;*/
         break;
       case R.id.btn_call:
         isVideo = false;
         if (mEditText.getText().toString().isEmpty()) {
           Toast.makeText(this, "please input address", Toast.LENGTH_SHORT).show();
         } else {
-                    /*if( !ipVerify(s,mEditText.getText().toString()) ){
-                        showToast("请输入正确 IP 地址！");
-                        return;
-                    }*/
           btnStart.setVisibility(View.GONE);
-          // sendCmd();
           tvTip.setVisibility(View.VISIBLE);
           mEditText.setVisibility(View.GONE);
           btnCall.setClickable(false);
@@ -263,127 +173,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Log.i("setOnClickListener", roomIdGetIP(1, 1));
         Toast.makeText(MainActivity.this, "makeText" + roomIdGetIP(1, 1), Toast.LENGTH_SHORT).show();
         break;
+      case R.id.video:
+//        address = "192.168.4.210";
+//        callVideo();
+        break;
     }
-  }
-
-  /**
-   * @param RegExp   正则表达式
-   * @param checkout 校对的字符
-   * @return boolean
-   * @description 正则表达式校验
-   * @time 2020/1/8 15:29
-   */
-  private boolean ipVerify(String RegExp, String checkout) {
-    Pattern pattern = Pattern.compile(RegExp);    // 编译正则表达式
-    Matcher matcher = pattern.matcher(checkout);    // 创建给定输入模式的匹配器
-    boolean bool = matcher.matches();
-    return bool;
   }
 
   private void showToast(String s) {
     Toast.makeText(this, s, Toast.LENGTH_SHORT).show();
-  }
-
-
-  private void startSocket() {
-    if (socket != null)
-      return;
-    try {
-      socket = new DatagramSocket(9000);
-      if (receivePacket == null) {
-        byte[] data = new byte[320];
-        receivePacket = new DatagramPacket(data, BUFFER_LENGTH);
-      }
-      startSocketThread();
-    } catch (SocketException e) {
-      e.printStackTrace();
-    }
-  }
-
-  private void receiveMessage() {
-    while (isThreadRunning) {
-      if (socket != null) {
-        try {
-          socket.receive(receivePacket);
-        } catch (IOException e) {
-          Log.e(TAG, "UDP数据包接收失败！线程停止");
-          e.printStackTrace();
-          return;
-        }
-      }
-      if (receivePacket == null || receivePacket.getLength() == 0) {
-        Log.e(TAG, "无法接收UDP数据或者接收到的UDP数据为空");
-        continue;
-      }
-      Log.d(TAG, " from " + receivePacket.getAddress().getHostAddress() + " length:" + receivePacket.getData().length);
-      String recvData = new String(receivePacket.getData());
-      Log.d(TAG, "rec data:" + recvData);
-      if (recvData.indexOf("connect") != -1) {
-        String message = "success";
-        byte[] info = message.getBytes();
-        DatagramPacket sendPacket = null;// 创建发送类型的数据报：  
-        try {
-          sendPacket = new DatagramPacket(info, info.length, InetAddress.getByName(receivePacket.getAddress().getHostAddress()), 9000);
-          socket.send(sendPacket);
-        } catch (UnknownHostException e) {
-          e.printStackTrace();
-        } catch (IOException e) {
-          e.printStackTrace();
-        }
-      }
-      if (recvData != null && recvData.length() > 0) {
-        Message msg = new Message();
-        msg.what = 1;
-        msg.obj = receivePacket.getAddress().getHostAddress();
-        mHandler.sendMessage(msg);
-        isThreadRunning = false;
-      }
-      if (receivePacket != null) {
-        receivePacket.setLength(BUFFER_LENGTH);
-      }
-    }
-  }
-
-  private void startSocketThread() {
-    isThreadRunning = true;
-    cmdThread = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        Log.d(TAG, "rec thread is running...");
-        receiveMessage();
-      }
-    });
-    cmdThread.start();
-  }
-
-  void sendCmd() {
-    if (socket == null) {
-      startSocket();
-    }
-    new Thread() {
-      @Override
-      public void run() {
-        super.run();
-        String message = "connect";
-        byte[] configInfo = message.getBytes();
-        InetAddress ip = null; //即目的IP
-        try {
-          ip = InetAddress.getByName(mEditText.getText().toString());
-        } catch (UnknownHostException e) {
-          e.printStackTrace();
-        }
-        while (isThreadRunning) {
-          DatagramPacket sendPacket = new DatagramPacket(configInfo, configInfo.length, ip, 9000);// 创建发送类型的数据报：  
-          try {
-            socket.send(sendPacket);
-          } catch (IOException e) {
-            e.printStackTrace();
-          }
-        }
-        Log.d(TAG, "stop thread");
-
-      }
-    }.start();
   }
 
 
@@ -404,7 +202,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
     mVideoView.closeVideo();
     TcpServer.getInstance().disconnect();
-    mHandler.removeCallbacks(cmdThread);
   }
 
   // 监听键盘事件
@@ -413,7 +210,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     Log.i("onKeyDown keyCode", keyCode + "");
     return super.onKeyDown(keyCode, event);
   }
-
 
   @Override
   public boolean onKeyUp(int keyCode, KeyEvent event) {
@@ -443,9 +239,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         roomIdFix = roomIdstr;
       }
       Log.i("roomIdFix", roomIdFix);
-      // callVideo();
-      //            int i = Integer.valueOf(roomIdFix);
-      //            showToast("输入的房间号是："+roomIdByInput);
       if (roomIdFix.length() == 3) {
         floor = Integer.valueOf(roomIdFix.substring(0, 1));
         room = Integer.valueOf(roomIdFix.substring(1, 3));
@@ -459,9 +252,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
       dest_ip = roomIdGetIP(floor, room);
       Log.d(TAG, dest_ip);
       Toast.makeText(MainActivity.this, "dest_ip:" + dest_ip, Toast.LENGTH_SHORT).show();
-      //            mEditText.setText(dest_ip);
-      //      ClicenSockets.targetIp = dest_ip;
-      //      address = "192.168.0.200";
+      mEditText.setText(dest_ip);
       address = dest_ip;
       callVideo();
 
@@ -521,6 +312,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
   };
 
+
+  /*
+   *服务端接收消息监听
+   */
   @Override
   public void onConnectFail() {
     Log.d(TAG, "Fail");
@@ -542,15 +337,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
     if (buffer[1] == 0x02) {
       showToast("对方已挂断");
-      TcpServer.getInstance().sendMsg(endingByte);
-      mVideoView.stopRecord();
-      isStart = false;
-      VisiableView();
+      if (isStart) {
+        mVideoView.stopRecord();
+        isStart = false;
+        VisiableView();
+      }
+      if (alertDialog2 != null) {
+        alertDialog2.dismiss();
+      }
+
+    }
+    if (buffer[1] == 0x07 && buffer[2] == 0x03) {
+      TcpServer.getInstance().disconnect();
     }
   }
 
   private void setDialog() {
-    final AlertDialog alertDialog2 = new AlertDialog.Builder(this)
+    alertDialog2 = new AlertDialog.Builder(this)
       .setTitle("提示")
       .setMessage("用户请求视频，是否接听")
       .setPositiveButton("确定", new DialogInterface.OnClickListener() {//添加"Yes"按钮
@@ -571,7 +374,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         @Override
         public void onClick(DialogInterface dialogInterface, int i) {
           TcpServer.getInstance().sendMsg(refuseVideoByte);
-          TcpServer.getInstance().disconnect();
           dialogInterface.dismiss();
         }
       }).create();

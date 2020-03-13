@@ -21,11 +21,6 @@
 		android:hint="请输入联系对方4位房间号"
 		android:textColor="#ffffff"/>
 
-	<!--<com.xwr.cameracodec.ipedit.SuperEditTextandroid:layout_width="wrap_content"android:layout_height="wrap_content"/>-->
-
-
-	<!--<com.google.android.material.textfield.TextInputLayoutandroid:layout_marginTop="50dp"android:id="@+id/textInputLayout"android:layout_width="match_parent"android:layout_height="wrap_content"app:counterMaxLength="4"android:hint="请输入要联系的房间号"><com.google.android.material.textfield.TextInputEditTextandroid:id="@+id/textInputEditText"android:layout_width="match_parent"android:layout_height="wrap_content"android:hint="请输入要联系的房间号2" /></com.google.android.material.textfield.TextInputLayout>-->
-
 
 	<TextView
 		android:id="@+id/tvTip"
@@ -64,7 +59,8 @@
 			android:id="@+id/video"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
-			android:text="video"/>
+			android:text="video"
+			android:visibility="gone"/>
 
 		<Button
 			android:id="@+id/btn_call"

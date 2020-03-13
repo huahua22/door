@@ -5,27 +5,9 @@ package com.test.door;
  * Describe:
  */
 public class Constants {
-  //    VIDEO,//视频
-  //    MONITOR , //监控
-  //    HANGUPMONITOR,//挂断监控
-  //    OPENDOOR, //开锁
-  //    ANSWER, // 接听门口机呼叫
-  //    HANGUPVIDEO, // 挂断视频
-  //    REFUSE, // 拒接门口机呼叫
-  //    GETTIME, //获取门口机时间,来更新室内机时间
-  //    OK,
-  //    HANGUPCALL, // 挂断呼叫
-  //    BUSY //正忙
-  public final static int VIDEO = 1; //视频
-  public final static int HANGUPVIDEO = 2; // 挂断视频
-  public final static int OK = 3; //接通
-  public final static int CALL = 4; //呼叫
-  public final static int HANGUPCALL = 5; // 挂断呼叫
-  public final static int BUSY = 6;//正忙
-  public final static int REFUSE = 7;//拒绝
-  public final static byte[] requestVideoByte = {(byte) 0xee, 0x01, 0x00, 0x00};
-  public final static byte[] acceptVideoByte = {(byte) 0xee, 0x03, 0x00, 0x00};
-  public final static byte[] refuseVideoByte = {(byte) 0xee, 0x07, 0x00, 0x00};
-  public final static byte[] handUpVideoByte = {(byte) 0xee, 0x02, 0x00, 0x00};
-  public final  static byte[] endingByte ={(byte) 0xee,0x00, (byte) 0xee,0x00};
+  public final static byte[] requestVideoByte = {(byte) 0xee, 0x01, 0x00, 0x00};//请求视频
+  public final static byte[] acceptVideoByte = {(byte) 0xee, 0x03, 0x00, 0x00}; //接受视频
+  public final static byte[] refuseVideoByte = {(byte) 0xee, 0x07, 0x00, 0x00};//拒接视频
+  public final static byte[] handUpVideoByte = {(byte) 0xee, 0x02, 0x00, 0x00};//挂断视频
+  public final static byte[] endingByte = {(byte) 0xee, 0x00, (byte) 0xee, 0x00};//ending
 }
