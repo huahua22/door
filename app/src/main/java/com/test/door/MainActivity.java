@@ -23,7 +23,6 @@ import android.widget.Toast;
 import com.test.door.scoket.ClicenSockets;
 import com.test.door.tcp.TcpClient;
 import com.test.door.tcp.TcpServer;
-import com.xwr.videocode.TcpPcm;
 import com.xwr.videocode.VideoSurfaceView;
 
 import java.io.IOException;
@@ -583,7 +582,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     btnCall.setVisibility(View.VISIBLE);
     mEditText.setVisibility(View.VISIBLE);
     tvTip.setVisibility(View.GONE);
-    btnCall.setClickable(true);
+    btnCall.setClickable(false);
     mRelativeLayout.setVisibility(View.GONE);
   }
 

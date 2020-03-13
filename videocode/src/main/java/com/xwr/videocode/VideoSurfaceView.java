@@ -94,7 +94,7 @@ public class VideoSurfaceView extends SurfaceView implements SurfaceHolder.Callb
     //    }
     dstAddress = address;
     TcpVideo.getInstance().connect(address);
-    TcpPcm.getInstance().connect(address);
+//    TcpPcm.getInstance().connect(address);
     //    mPcmUdpUtil = PcmUdpUtil.getUdpBuild();
 
   }
@@ -204,6 +204,9 @@ public class VideoSurfaceView extends SurfaceView implements SurfaceHolder.Callb
       }
       parameters.setPreviewFormat(ImageFormat.NV21);
       List<Camera.Size> sizes = parameters.getSupportedPreviewSizes();
+      for(int i=0;i<sizes.size();i++){
+        Log.d(TAG,"camera support size:width--"+sizes.get(i).width+" height--"+sizes.get(i).height);
+      }
       parameters.setPreviewSize(width, height);
       parameters.setPreviewFpsRange(max[0], max[1]);
       mCamera.setParameters(parameters);
@@ -251,7 +254,7 @@ public class VideoSurfaceView extends SurfaceView implements SurfaceHolder.Callb
       mCamera.stopPreview();
     }
     TcpVideo.getInstance().close();
-    TcpPcm.getInstance().disconnect();
+//    TcpPcm.getInstance().disconnect();
     //    AudioTrackManager.getInstance().pausePlay();
     //    AudioRecordManager.getInstance().stopRecording();
   }
@@ -269,11 +272,11 @@ public class VideoSurfaceView extends SurfaceView implements SurfaceHolder.Callb
     if(TcpVideo.getInstance().isConnect()){
       TcpVideo.getInstance().close();
     }
-    TcpPcm.getInstance().disconnect();
+//    TcpPcm.getInstance().disconnect();
 
     //    mHandlerThread.quit();//退出消息循环
-    AudioRecordManager.getInstance().onDestroy();
-    AudioTrackManager.getInstance().stopPlay();
+//    AudioRecordManager.getInstance().onDestroy();
+//    AudioTrackManager.getInstance().stopPlay();
   }
 
   /**
@@ -292,7 +295,7 @@ public class VideoSurfaceView extends SurfaceView implements SurfaceHolder.Callb
     } else {
       Log.d(TAG, "start fail");
     }
-    startRecordVoice();
+//    startRecordVoice();
   }
 
   //定义Camera的回调方法
