@@ -83,11 +83,6 @@ public class TcpVideo {
         InetAddress ipAddress = InetAddress.getByName(ip);
         mSocket = new Socket(ipAddress, port);
 
-        //设置不延时发送
-        //mSocket.setTcpNoDelay(true);
-        //设置输入输出缓冲流大小
-        //mSocket.setSendBufferSize(8*1024);
-        //mSocket.setReceiveBufferSize(8*1024);
 
         if (isConnect()) {
           mOutputStream = mSocket.getOutputStream();
@@ -115,29 +110,6 @@ public class TcpVideo {
   }
 
   public void sendImage(byte[] data) {
-    //    byte[] result = new byte[1452];
-    //    int destPos = 0;
-    //    int size;
-    //    if (length > 1452) {
-    //      if (length % 1452 > 0) {
-    //        size = (length / 1452) + 1;
-    //      } else {
-    //        size = length / 1;
-    //      }
-    //      Log.d(TAG, "size:" + size);
-    //      for (int i = 0; i < size; i++) {
-    //        Arrays.fill(result, (byte) 0);
-    //        System.arraycopy(data, destPos, result, 0, 1452);
-    //        destPos += 1452;
-    //        Message msg = new Message();
-    //        msg.obj = result;
-    //        videoHandler.sendMessageDelayed(msg, 1000);
-    //      }
-    //    } else {
-    //      Message msg = new Message();
-    //      msg.obj = data;
-    //      videoHandler.sendMessageDelayed(msg, 1000);
-    //    }
     Message msg = new Message();
     msg.obj = data;
     videoHandler.sendMessage(msg);
@@ -158,7 +130,9 @@ public class TcpVideo {
     } catch (IOException e) {
       e.printStackTrace();
     }
-    mHandlerThread.quit();
+    if (mHandlerThread!=null){
+      mHandlerThread.quit();
+    }
     if (mSocketThread != null) {
       mSocketThread.interrupt();//not intime destory thread,so need a flag
     }

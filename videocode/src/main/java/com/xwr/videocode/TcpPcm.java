@@ -16,6 +16,7 @@ public class TcpPcm {
   private static TcpPcm mSocketClient = null;
   private HandlerThread mHandlerThread;
   Handler pcmHandler;
+  private String path = FileUtil.getSDPath()+"rec.pcm";
 
 
   public static TcpPcm getInstance() {
@@ -38,6 +39,7 @@ public class TcpPcm {
   private boolean isStop = false;//thread flag
 
   private void init() {
+    FileUtil.createFile(path);
     mHandlerThread = new HandlerThread("pcmThread");
     mHandlerThread.start();
     pcmHandler = new Handler(mHandlerThread.getLooper()) {
@@ -87,7 +89,7 @@ public class TcpPcm {
         mSocket = new Socket(ipAddress, port);
 
         //设置不延时发送
-        //mSocket.setTcpNoDelay(true);
+        mSocket.setTcpNoDelay(true);
         //设置输入输出缓冲流大小
         //mSocket.setSendBufferSize(8*1024);
         //mSocket.setReceiveBufferSize(8*1024);
@@ -119,6 +121,7 @@ public class TcpPcm {
           size = mInputStream.read(buffer);//null data -1 , zrd serial rule size default 10
           if (size > 0) {
             AudioTrackManager.getInstance().startPlay(buffer);
+            FileUtil.save(buffer,0,buffer.length,path,true);
           }
         } catch (IOException e) {
           Log.e(TAG_log, "SocketThread read io exception = " + e.getMessage());

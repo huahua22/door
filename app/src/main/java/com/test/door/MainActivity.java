@@ -21,8 +21,6 @@ import com.test.door.tcp.TcpClient;
 import com.test.door.tcp.TcpServer;
 import com.xwr.videocode.VideoSurfaceView;
 
-import java.net.DatagramSocket;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -31,18 +29,14 @@ import static com.test.door.Constants.acceptVideoByte;
 import static com.test.door.Constants.handUpVideoByte;
 import static com.test.door.Constants.refuseVideoByte;
 import static com.test.door.Constants.requestVideoByte;
+import static com.test.door.IpServer.roomIdGetIP;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, TcpServer.OnServerReceiveListener {
   private static String TAG = "MainActivity";
   AlertDialog alertDialog2;
-
-  static {
-    System.loadLibrary("native-lib");
-  }
-
-  int i = 0;
   boolean calldest = false;
   boolean destCall = false;
+
   Button btnStart;
   Button btnStop;
   Button btnCall;
@@ -54,9 +48,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
   RelativeLayout mRelativeLayout;
   EditText mEditText;
   private boolean isStart = false;
-  DatagramSocket socket = null;
-  private static final int BUFFER_LENGTH = 320;
-  private boolean isThreadRunning = false;
   String address;
   // 接收 OK 状态
   private boolean isVideo = false;
@@ -173,10 +164,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Log.i("setOnClickListener", roomIdGetIP(1, 1));
         Toast.makeText(MainActivity.this, "makeText" + roomIdGetIP(1, 1), Toast.LENGTH_SHORT).show();
         break;
-      case R.id.video:
+//      case R.id.video:
 //        address = "192.168.4.210";
 //        callVideo();
-        break;
+//        break;
     }
   }
 
@@ -260,10 +251,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     return super.onKeyUp(keyCode, event);
   }
 
-
-  public native String stringFromJNI();
-
-  public native String roomIdGetIP(int floor, int roomId);
 
   private TcpClient.OnDataReceiveListener dataReceiveListener = new TcpClient.OnDataReceiveListener() {
     @Override
