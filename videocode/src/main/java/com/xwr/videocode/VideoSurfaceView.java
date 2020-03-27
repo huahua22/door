@@ -45,6 +45,16 @@ public class VideoSurfaceView extends SurfaceView implements SurfaceHolder.Callb
   private Camera camera;
   private String path = FileUtil.getSDPath() + "/test.h264";
   private String pcm_path = FileUtil.getSDPath() + "/record.pcm";
+  int frameSizeFlag = 0;
+
+//  private Handler handler = new Handler();
+//  private Runnable task = new Runnable() {
+//    public void run() {
+//      handler.postDelayed(this, 1000);
+//      Log.d(TAG, "frameSize：" + frameSizeFlag);
+//      framerate = 0;
+//    }
+//  };
 
   //构造函数
   public VideoSurfaceView(Context context, int cameraId) {
@@ -60,6 +70,7 @@ public class VideoSurfaceView extends SurfaceView implements SurfaceHolder.Callb
     Log.d("huahua", "path:" + path);
     FileUtil.createFile(path);
     FileUtil.createFile(pcm_path);
+
   }
 
   public void initSocket(String address) {
@@ -73,7 +84,7 @@ public class VideoSurfaceView extends SurfaceView implements SurfaceHolder.Callb
    */
   private void startRecordVoice() {
     //    SpeexUtil.getInstance().init();
-//    final short[] outdata = new short[320];
+    //    final short[] outdata = new short[320];
     AudioRecordManager.getInstance().startRecording(new AudioRecordManager.OnAudioRecordListener() {
       @Override
       public void onVoiceRecord(final byte[] data, int size) {
@@ -142,7 +153,7 @@ public class VideoSurfaceView extends SurfaceView implements SurfaceHolder.Callb
       mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE, framerate);
       mediaFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT,
         debugger.getEncoderColorFormat());
-      mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1);
+      mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1);//关键帧间隔时间
       mMediaCodec.configure(mediaFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
       mMediaCodec.start();
     } catch (IOException e) {
@@ -269,10 +280,17 @@ public class VideoSurfaceView extends SurfaceView implements SurfaceHolder.Callb
   //定义Camera的回调方法
   private Camera.PreviewCallback previewCallback = new Camera.PreviewCallback() {
     byte[] mPpsSps = new byte[0];
-
+    long timeStamp =System.currentTimeMillis();
+    int frameNum = 0;
     @Override
     public void onPreviewFrame(byte[] data, Camera camera) {
       synchronized (this) {
+//        handler.post(task);
+       if(System.currentTimeMillis()-timeStamp>=1000){
+         Log.d(TAG,"frame num:"+frameNum);
+         timeStamp = System.currentTimeMillis();
+         frameNum =0;
+       }
         if (data == null) {
           return;
         }
@@ -316,6 +334,7 @@ public class VideoSurfaceView extends SurfaceView implements SurfaceHolder.Callb
               System.arraycopy(head, 0, testdata, 0, 2);
               System.arraycopy(length, 0, testdata, 2, length.length);
               System.arraycopy(outData, 0, testdata, length.length + 2, outData.length);
+              frameNum++;
               //              FileUtil.save(testdata, 0, testdata.length, path, true);
               TcpVideo.getInstance().sendImage(testdata);
               Log.d(TAG, "onPreviewCallback thread:" + Thread.currentThread().getName() + " data length:" + testdata.length);

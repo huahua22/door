@@ -10,30 +10,36 @@
 	<RelativeLayout
 		android:id="@+id/main"
 		android:layout_width="match_parent"
-		android:layout_height="match_parent"
-		android:layout_centerHorizontal="true"/>
+		android:layout_height="match_parent"/>
+
+	<EditText
+		android:id="@+id/ip_address"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_alignParentTop="true"
+		android:text="192.168.4.210"
+		android:textColor="#ff5454"
+		/>
 
 
 	<LinearLayout
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:layout_alignParentBottom="true"
-		android:layout_marginBottom="20dp"
+		android:layout_marginBottom="10dp"
 		android:gravity="center_horizontal">
 
-
 		<Button
-			android:id="@+id/video"
+			android:id="@+id/btn_start"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
-			android:text="video"/>
+			android:text="开始"/>
 
 		<Button
 			android:id="@+id/btn_stop"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_marginLeft="20dp"
-			android:text="挂断"/>
-
+			android:text="停止"/>
 	</LinearLayout>
 </RelativeLayout>

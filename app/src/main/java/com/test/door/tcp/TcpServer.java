@@ -138,7 +138,7 @@ public class TcpServer {
     @Override
     public void run() {
       super.run();
-      while (isConnect) {
+      while (isConnect && isConnect()) {
         try {
           byte[] buf = new byte[1024];
           if (mInputStream == null)
@@ -166,6 +166,13 @@ public class TcpServer {
 
   }
 
+  public boolean isConnect() {
+    boolean flag = false;
+    if (clientScoket != null) {
+      flag = clientScoket.isConnected();
+    }
+    return flag;
+  }
 
   public void sendMsg(byte[] data) {
     Message msg = new Message();
